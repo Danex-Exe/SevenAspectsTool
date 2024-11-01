@@ -56,52 +56,23 @@ def confirm(message: str, speed: float = 0.015):
 class System:
     def __init__(self):
         self.project_link = "https://github.com/Danex-Exe/SevenAspectsTool.git"
-        self.default_setting_link = "https://raw.githubusercontent.com/Danex-Exe/SevenAspectsTool/Attach/refs/heads/main/setting.json"
-        # self.version_link = "https://api.github.com/repos/Danex-Exe/SevenAspectsTool/contents/version.json"
+        self.default_setting_link = "https://raw.githubusercontent.com/Danex-Exe/SevenAspectsTool/refs/heads/main/Attack/setting.json"
+        self.version_link = "https://api.github.com/repos/Danex-Exe/SevenAspectsTool/tags"
 def check_update(setting):
     """
         check_update(setting) - Функция проверки наличия нового обновления
         setting - Подкласс класса DataBaze (DataFile)
     """
     default_setting = requests.get(project.default_setting_link).json() # Получаем в json формате конфигурационный файл програмы
-    # project_version = requests.get(project.version_link).json() # Получаем в json формате текущую версию программы
-    if setting.info() == None:
-        if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
-            try:
-                os.system(f"git pull {project.project_link}")
-                setting.create()
-                setting.write(default_setting)
-                animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
-                quit()
-            except:
-                animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
-                quit()
-        else:
-            animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
-            quit()
-    else:
-        setting_data = setting.read()
-        if 'current_versuion' in setting_data:
-            if setting_data['current_version'] == default_setting['current_version']:
-                return
-            else:
-                if confirm(f"\n\nВышла новая версия программы.\nДля установки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
-                    try:
-                        os.system(f"git pull {project.project_link}")
-                        setting.write(default_setting)
-                        animate_message("\n\n\n\nВы успешно устанавили обновление, перезапустите программу", color.green)
-                        quit()
-                    except:
-                        animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
-                        quit()
-                else:
-                    animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
-                    quit()
-        else:
+    response = requests.get(project.version_link)
+    if response.status_code == 200:
+        project_version = max(response.json(), key=lambda x: x['name'])['name']
+        if setting.info() == None:
             if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
                 try:
                     os.system(f"git pull {project.project_link}")
                     setting.create()
+                    default_setting['current_version'] = project_version
                     setting.write(default_setting)
                     animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
                     quit()
@@ -111,6 +82,44 @@ def check_update(setting):
             else:
                 animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
                 quit()
+        else:
+            setting_data = setting.read()
+            if 'current_version' in setting_data:
+                if setting_data['current_version'] == project_version:
+                    return
+                else:
+                    if confirm(f"\n\nВышла новая версия программы.\nДля установки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                        try:
+                            os.system(f"git pull {project.project_link}")
+                            default_setting['current_version'] = project_version
+                            setting.write(default_setting)
+                            animate_message("\n\n\n\nВы успешно устанавили обновление, перезапустите программу", color.green)
+                            quit()
+                        except:
+                            animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                            quit()
+                    else:
+                        animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                        quit()
+            else:
+                if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                    try:
+                        os.system(f"git pull {project.project_link}")
+                        setting.create()
+                        default_setting['current_version'] = project_version
+                        setting.write(default_setting)
+                        animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
+                        quit()
+                    except:
+                        animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                        quit()
+                else:
+                    animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                    quit()
+    else:
+        animate_message("\n\n\n\nПроблема с подключением к интернету", color.red)
+        quit()
+    
 
 def check_connection(host: str = "8.8.8.8", port: int = 53, timeout: int = 3):
     """
