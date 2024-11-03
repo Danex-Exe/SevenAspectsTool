@@ -1,5 +1,6 @@
 import os, time, requests, socket
 from datetime import datetime
+from Attack.databaze import DataBaze # Импортируем класс для работы с базами данных
 
 class Color:
     def __init__(self, esc_type):
@@ -58,50 +59,18 @@ class System:
         self.project_link = "https://github.com/Danex-Exe/SevenAspectsTool.git"
         self.default_setting_link = "https://raw.githubusercontent.com/Danex-Exe/SevenAspectsTool/refs/heads/main/Attack/version.json"
         self.version_link = "https://api.github.com/repos/Danex-Exe/SevenAspectsTool/tags"
-def check_update(setting):
+def check_update(compulsion : bool = False):
     """
         check_update(setting) - Функция проверки наличия нового обновления
         setting - Подкласс класса DataBaze (DataFile)
     """
+    setting = db.file("version") # Класс для использования файла внутри базы данных
     default_setting = requests.get(project.default_setting_link).json() # Получаем в json формате конфигурационный файл програмы
     response = requests.get(project.version_link)
     if response.status_code == 200:
-        project_version = max(response.json(), key=lambda x: x['name'])['name']
-        if setting.info() == None:
-            if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
-                try:
-                    os.system(f"git pull {project.project_link}")
-                    setting.create()
-                    default_setting['current_version'] = project_version
-                    setting.write(default_setting)
-                    animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
-                    quit()
-                except:
-                    animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
-                    quit()
-            else:
-                animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
-                quit()
-        else:
-            setting_data = setting.read()
-            if 'current_version' in setting_data:
-                if setting_data['current_version'] == project_version:
-                    return
-                else:
-                    if confirm(f"\n\nВышла новая версия программы.\nДля установки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
-                        try:
-                            os.system(f"git pull {project.project_link}")
-                            default_setting['current_version'] = project_version
-                            setting.write(default_setting)
-                            animate_message("\n\n\n\nВы успешно устанавили обновление, перезапустите программу", color.green)
-                            quit()
-                        except:
-                            animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
-                            quit()
-                    else:
-                        animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
-                        quit()
-            else:
+        if not compulsion:
+            project_version = max(response.json(), key=lambda x: x['name'])['name']
+            if setting.info() == None:
                 if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
                     try:
                         os.system(f"git pull {project.project_link}")
@@ -110,16 +79,133 @@ def check_update(setting):
                         setting.write(default_setting)
                         animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
                         quit()
-                    except:
+                    except Exception as e:
                         animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                        quit()
+                    except KeyboardInterrupt:
+                        animate_message(f"\n\n\n\nВы принудительно завершили загрузку обновления", color.red)
                         quit()
                 else:
                     animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
                     quit()
+            else:
+                setting_data = setting.read()
+                if 'current_version' in setting_data:
+                    if setting_data['current_version'] == project_version:
+                        return
+                    else:
+                        if confirm(f"\n\nВышла новая версия программы.\nДля установки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                            try:
+                                os.system(f"git pull {project.project_link}")
+                                default_setting['current_version'] = project_version
+                                setting.write(default_setting)
+                                animate_message("\n\n\n\nВы успешно устанавили обновление, перезапустите программу", color.green)
+                                quit()
+                            except Exception as e:
+                                animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                                quit()
+                            except KeyboardInterrupt:
+                                animate_message(f"\n\n\n\nВы принудительно завершили загрузку обновления", color.red)
+                                quit()
+                        else:
+                            animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                            quit()
+                else:
+                    if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                        try:
+                            os.system(f"git pull {project.project_link}")
+                            setting.create()
+                            default_setting['current_version'] = project_version
+                            setting.write(default_setting)
+                            animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
+                            quit()
+                        except Exception as e:
+                            animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                            quit()
+                        except KeyboardInterrupt:
+                            animate_message(f"\n\n\n\nВы принудительно завершили загрузку обновления", color.red)
+                            quit()
+                    else:
+                        animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                        quit()
+        else:
+            project_version = max(response.json(), key=lambda x: x['name'])['name']
+            if setting.info() == None:
+                if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                    try:
+                        os.system(f"git pull {project.project_link}")
+                        setting.create()
+                        default_setting['current_version'] = project_version
+                        setting.write(default_setting)
+                        animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
+                        quit()
+                    except Exception as e:
+                        animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                        quit()
+                    except KeyboardInterrupt:
+                        animate_message(f"\n\n\n\nВы принудительно завершили загрузку обновления", color.red)
+                        quit()
+                else:
+                    animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                    quit()
+            else:
+                setting_data = setting.read()
+                if 'current_version' in setting_data:
+                    if setting_data['current_version'] == project_version:
+                        return
+                    else:
+                        if confirm(f"\n\nВ програме возникла ошибка, пожалуйста переустановити ее. Для установки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                            try:
+                                os.system(f"git pull {project.project_link}")
+                                default_setting['current_version'] = project_version
+                                setting.write(default_setting)
+                                animate_message("\n\n\n\nВы успешно устанавили обновление, перезапустите программу", color.green)
+                                quit()
+                            except Exception as e:
+                                animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                                quit()
+                            except KeyboardInterrupt:
+                                animate_message(f"\n\n\n\nВы принудительно завершили загрузку обновления", color.red)
+                                quit()
+                        else:
+                            animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                            quit()
+                else:
+                    if confirm(f"\n\nПрограма потеряла конфигурационный файл, требуется переустановка программы.\nДля переустановки, введите {color.color_message('Y', color.green)} если вы согласы и {color.color_message('n', color.red)} если не согласны. Введите (Y/n): "):
+                        try:
+                            os.system(f"git pull {project.project_link}")
+                            setting.create()
+                            default_setting['current_version'] = project_version
+                            setting.write(default_setting)
+                            animate_message("\n\n\n\nВы успешно переустановили программу", color.green)
+                            quit()
+                        except Exception as e:
+                            animate_message(f"\n\n\n\nВо время установки обновления произошла ошибка, пожалуйста переустановити програму вручную (Подробнее: {project.project_link})", color.red)
+                            quit()
+                        except KeyboardInterrupt:
+                            animate_message(f"\n\n\n\nВы принудительно завершили загрузку обновления", color.red)
+                            quit()
+                    else:
+                        animate_message("\n\n\n\nВы отказались устанавливать обновление", color.red)
+                        quit()
     else:
         animate_message("\n\n\n\nПроблема с подключением к интернету", color.red)
         quit()
     
+def check_logs():
+    """
+        Проверяем существует ли файл с логами
+    """
+    logs_file = db.file('logs') # Класс для использования файла внутри базы данных
+    if logs_file.info():
+        """
+            Файл с логами найден
+        """
+    else:
+        """
+            Файл с логами не найден
+        """
+    pass
 
 def check_connection(host: str = "8.8.8.8", port: int = 53, timeout: int = 3):
     """
@@ -143,3 +229,4 @@ def check_connection(host: str = "8.8.8.8", port: int = 53, timeout: int = 3):
 
 color = Color('\033') # Класс для использования цвета в командной строке
 project = System() # Класс с системными значениями
+db = DataBaze("Attack/") # Класс для использования базы данных

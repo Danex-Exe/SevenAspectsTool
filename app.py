@@ -6,14 +6,11 @@ from Attack.Feedback_Services import feedback_urls # Импортируем фу
 import time, os, requests # Импортируем модули для задержки, работы с ОС и запросов на сайты
 from asyncio import ensure_future, gather, run # Импортируем функции для работы с асинхранными функциями
 from Attack.functions import Color, set_title, clear, waiting, animate_message, get_time, center_text, stop, confirm, System, check_update, check_connection # Импортируем вспомогательные функции и классы для работы програмы
-from Attack.databaze import DataBaze # Импортируем класс для работы с базами данных
 
 """
     Обьявляем классы
 """
 color = Color('\033') # Класс для использования цвета в командной строке
-db = DataBaze("Attack/") # Класс для использования базы данных
-setting = db.file("version") # Класс для использования файла внутри базы данных
 project = System() # Класс с системными значениями
 
 """
@@ -24,7 +21,7 @@ if check_connection(): # Проверяем наличие подключени�
 else:
     animate_message("\n\n\n\nПодключение к серверу не установлено\n\n", color.red)
     quit()
-check_update(setting) # Проверяем наличие обновлений
+check_update() # Проверяем наличие обновлений
 set_title("Seven Aspects - Bomber") # Переименновываем окно командной строки
 try:
     import keyboard, aiohttp
@@ -124,3 +121,6 @@ try:
             clear()
 except KeyboardInterrupt:
     stop()
+except Exception:
+    check_update(True)
+    quit()
